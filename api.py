@@ -4,6 +4,7 @@ from flask.ext import restful
 from flask.ext.restful import reqparse
 from users import User
 import hashlib
+import util
 app = Flask(__name__)
 api = restful.Api(app)
 
@@ -30,17 +31,31 @@ class Signup(restful.Resource):
 
 
 class Login(restful.Resource):
+
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('email', type=str, required=True)
         parser.add_argument('password', type=str, required=True)
         request_params = parser.parse_args()
         flag, user = User.authenticate_email(request_params['username'], hashlib.md5(request_params['password']).hexdigest())
-        if flag:
-            return {'user_id': user['id'], 'name': user['name'], 'access_type': user['access_type'], 'email': user['email'], 'error': 0}
-        else:
-            return {'error': user['error']}
+        return user
+
+
+class UserSongsData(restful.Resource):
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('email', type=str, required=True)
+        request_params = parser.parse_args()
+
+        data = util.get_user_song_data(request_params['email'])
+
+        return data
 
 
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
+api.add_resource(UserSongsData, '/user_songs_data')
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=8000, debug=True, use_reloader=True)

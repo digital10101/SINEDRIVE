@@ -27,7 +27,7 @@ class DB(object):
         #self.connection = MySQLdb.connect(host=host, user=username, passwd=password, db=database,
         #                                  cursorclass=MySQLdb.cursors.SSDictCursor)
         self.connection = MySQLdb.connect(host=host, user=username, passwd=password, db=database,
-                                          cursorclass=MySQLdb.cursors.SSDictCursor, unix_socket="/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock")
+                                          cursorclass=MySQLdb.cursors.SSDictCursor)
         self.connection.autocommit(True)
         self._mysql = MySQLdb._mysql
 
