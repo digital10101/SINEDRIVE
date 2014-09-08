@@ -6,9 +6,17 @@ import random
 
 def get_user_song_data(user_id):
 
-    songs = songs_gvalues()
-    songs = random.shuffle(songs)
+    songs = songs_g_values()
     songs_rel = get_songs_related_to(user_id)
+
+    song_g_ids = list()
+    for song in songs:
+        song_g_ids.append(song['song_id'])
+
+    song_rel_ids = list()
+    for song in songs_rel:
+        song_rel_ids.append(song['song_id'])
+
 
     if len(songs) > 0:
         songs = sorted(songs, key=lambda k: k['gvalue'])
@@ -16,7 +24,7 @@ def get_user_song_data(user_id):
     return {'error': 0, 'data': songs}
 
 
-def songs_gvalues():
+def songs_g_values():
     query = 'Select song_filename, album, song_id, title, band_name from songs_info order by gvalue desc limit 20'
     mysql = Mysql()
     rows = None
@@ -39,7 +47,7 @@ def get_songs_related_to(user_id):
         print e
     mysql.close()
     rows = list(rows)
-    print rows
+    return rows
 
 
 def get_song_data(song_dict_list):
@@ -63,5 +71,5 @@ def get_song_data(song_dict_list):
 
     print song_data
 
-songs_gvalues()
+
 
