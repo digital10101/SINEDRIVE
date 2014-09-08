@@ -58,7 +58,7 @@ class User(object):
 
     @classmethod
     def authenticate_email(cls, email, password):
-        mysql = Mysql()
+        mysql = Mysql()  # TO MAKE A MYSQL CONNECTION
         #flag = 1 if password == 'c6deeec61592216284ae2af49957e3b7' else 0
         query = 'select user_id, email, acc_type from login where email = "%s" and password = "%s"' % (email, password)
         row = mysql.getSingleRow(query)
