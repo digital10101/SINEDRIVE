@@ -2,6 +2,7 @@ __author__ = 'karan'
 from mysql_wrapper import Mysql
 from operator import itemgetter
 import random
+import ujson
 
 
 def get_user_song_data(user_id, offset):
@@ -127,5 +128,56 @@ def song_vote(user_id, song_id, liked, disliked):
         print e
     mysql.close()
     return {'error': 0}
+
+
+def mail(rec_id, sender_id, message, sub):
+    mysql = Mysql()
+    query = 'insert into `inbox` (rec_id, sender_id, message, subject) values(%d, %d, "%s", "%s")' % (rec_id, sender_id, mysql.escape_string(message), mysql.escape_string(sub))
+    try:
+        mysql.execute(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    return {'error': 0}
+
+
+def subject(rec_id, seq_no):
+
+    query = 'Select login.name , inbox.msg_id , inbox.subject , inbox.read , inbox.timestamp from inbox join login on inbox.sender_id = login.user_id where inbox.rec_id = %d order by inbox.timestamp desc limit 2 offset %s' % (rec_id, str((seq_no - 1) * 2))
+    mysql = Mysql()
+    rows = None
+    try:
+        rows = mysql.getManyRows(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    rows = list(rows)
+    msg_dict = dict()
+    for row in rows:
+        row['timestamp'] = row['timestamp'].isoformat()
+        msg_dict[str(row['msg_id'])] = row
+
+    response = {
+        'data': msg_dict,
+        'error': 0
+    }
+
+    return response
+
+
+def update_read(msg_id):
+
+    query = 'update inbox set read = 1 where msg_id = %d' % msg_id
+    mysql = Mysql()
+    try:
+        mysql.execute(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    return {'error': 0}
+
+
+
+
 
 

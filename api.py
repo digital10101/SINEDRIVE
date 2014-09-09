@@ -23,10 +23,12 @@ class Signup(restful.Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('email', type=str, required=True)
         parser.add_argument('password', type=str, required=True)
+        parser.add_argument('name', type=str, required=True)
         request_params = parser.parse_args()
         response = User.signup(
             request_params['email'],
-            request_params['password']
+            request_params['password'],
+            request_params['name']
         )
         return response
 
@@ -82,11 +84,53 @@ class SongVote(restful.Resource):
 
         return data
 
+
+class Mail(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        parser.add_argument('sender_id', type=int, required=True)
+        parser.add_argument('message', type=str, required=True)
+        parser.add_argument('subject', type=str, required=True)
+        request_params = parser.parse_args()
+
+        data = util.mail(request_params['user_id'], request_params['sender_id'], request_params['message'], request_params['subject'])
+
+        return data
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        parser.add_argument('seq_no', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.subject(request_params['user_id'], request_params['seq_no'])
+
+        return data
+
+
+class UpdateRead(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        parser.add_argument('msg_id', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.update_read(request_params['user_id'], request_params['msg_id'])
+
+        return data
+
+
+
 api.add_resource(GetNewTrack, '/get_next_track')
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
 api.add_resource(UserSongsData, '/user_songs_data')
 api.add_resource(SongVote, '/like_dislike')
+api.add_resource(Mail, '/mail')
+api.add_resource(UpdateRead, '/update_read')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8000, debug=True, use_reloader=True)

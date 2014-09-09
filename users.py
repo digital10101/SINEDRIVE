@@ -31,7 +31,7 @@ class User(object):
 
             password = hashlib.md5(password).hexdigest()
             mysql = Mysql()
-            query = 'insert into login (`email`, password, acc_type) values ("%s", "%s", %d)' % (email, password, 0)
+            query = 'insert into login (`email`, password, acc_type, `name`) values ("%s", "%s", %d, %s)' % (email, password, 0, name)
             try:
                 mysql.execute(query)
             except Exception as e:
