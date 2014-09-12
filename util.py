@@ -277,18 +277,8 @@ def collab(user_id, sender, message, audio):
         mysql.execute(query, (user_id, sender, message, audio))
     except Exception as e:
         print e
+    msg_id = mysql.last_insert_id
     mysql.close()
-
-    msg_query = 'select msg_id from collab_info where user_id = %d and sender = %d and message = "%s" and audio = %d' % (user_id, sender, mysql.escape_string(message), audio)
-    rows = {}
-    mysql = Mysql()
-    try:
-        rows = mysql.getSingleRow(msg_query)
-    except Exception as e:
-        print e
-    mysql.close()
-    msg_id = rows['msg_id']
-
     query = 'insert into `notification` (type_id, msg_id, created_by, for_id, viewed) values (101, %d, %d, %d, 0)'
     mysql = Mysql()
     try:
@@ -357,8 +347,18 @@ def get_question(wall_user_id, seq_no):
 
 
 def post_question(question, user_id, wall_user_id):
+    mysql = Mysql()
+    query = 'insert into `questions` (question, user_id, wall_user_id) values ("%s", %d, %d)' % (mysql.escape_string(question), user_id, wall_user_id)
+    try:
+        mysql.execute(query)
+    except Exception as e:
+        print e
+    msg_id = mysql.last_insert_id
+    mysql.close()
 
-    query = 'insert into `questions` (question, user_id, wall_user_id) values (%s, %d, %d)' % (question, user_id, wall_user_id)
+    print msg_id
+
+    query = 'insert into `notification` (type_id, msg_id, created_by, for_id, viewed) values (103, %d, %d, %d, 0)' % (msg_id, user_id, wall_user_id)
     mysql = Mysql()
     try:
         mysql.execute(query)
@@ -366,26 +366,8 @@ def post_question(question, user_id, wall_user_id):
         print e
     mysql.close()
 
-    msg_query = 'select ques_id from questions where question = "%s" and user_id = %d and wall_user_id = %d' % (question, user_id, wall_user_id)
-    rows = {}
-    mysql = Mysql()
-    try:
-        rows = mysql.getSingleRow(msg_query)
-    except Exception as e:
-        print e
-    mysql.close()
-    msg_id = rows['ques_id']
-
-    query = 'insert into `notification` (type_id, msg_id, created_by, for_id, viewed) values (103, %d, %d, %d, 0)'
-    mysql = Mysql()
-    try:
-        mysql.execute(query, (msg_id, user_id, wall_user_id))
-    except Exception as e:
-        print e
-    mysql.close()
-
     return {'error': 0}
-
+post_question('q', 2, 3)
 
 def get_comment(user_id):
 
@@ -459,9 +441,9 @@ def get_unanswered(ques_id):
     return response
 
 
-def post_answer(user_id, answer):
+def post_answer(user_id, answer, ques_id):
 
-    query = 'update questions set answer_flag = 1 and answer = %s were user_id = %d' % (answer, user_id)
+    query = 'update questions set answer_flag = 1, answer = %s where user_id = %d and ques_id' % (answer, user_id, ques_id)
     mysql = Mysql()
     try:
         mysql.execute(query)

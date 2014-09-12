@@ -218,7 +218,7 @@ class CollaborationAccept(restful.Resource):
 
 class GetQuestion(restful.Resource):
 
-    def post(self):
+    def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('wall_user_id', type=int, required=True)
         parser.add_argument('seq_no', type=int, required=True)
@@ -237,7 +237,7 @@ class PostQuestion(restful.Resource):
         parser.add_argument('question', type=str, required=True)
         request_params = parser.parse_args()
 
-        data = util.post_question(request_params['user_id'], request_params['wall_user_id'], request_param['question'])
+        data = util.post_question(request_params['user_id'], request_params['wall_user_id'], request_params['question'])
 
         return data
 
@@ -284,9 +284,10 @@ class PostAnswer(restful.Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('ques_id', type=int, required=True)
         parser.add_argument('answer', type=str, required=True)
+        parser.add_argument('ques_id', type=int, required=True)
         request_params = parser.parse_args()
 
-        data = util.post_answer(request_params['ques_id'], request_params['answer'])
+        data = util.post_answer(**request_params)
 
         return data
 
