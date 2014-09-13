@@ -443,7 +443,7 @@ def get_unanswered(ques_id):
 
 def post_answer(user_id, answer, ques_id):
 
-    query = 'update questions set answer_flag = 1, answer = %s where user_id = %d and ques_id' % (answer, user_id, ques_id)
+    query = 'update questions set answer_flag = 1, answer = "%s" where user_id = %d and ques_id = %d' % (answer, user_id, ques_id)
     mysql = Mysql()
     try:
         mysql.execute(query)
@@ -451,21 +451,19 @@ def post_answer(user_id, answer, ques_id):
         print e
     mysql.close()
 
-    msg_query = 'select ques_id, wall_user_id from questions where answer = "%s" and user_id = %d' % (answer, user_id)
-    rows = {}
+    ques_query = 'select wall_user_id from questions where ques_id = %d' % (ques_id)
+    row = {}
     mysql = Mysql()
     try:
-        rows = mysql.getSingleRow(msg_query)
+        row = mysql.getSingleRow(ques_query)
     except Exception as e:
         print e
     mysql.close()
-    msg_id = rows['ques_id']
-    wall_id = rows['wall_user_id']
-
-    query = 'insert into `notification` (type_id, msg_id, created_by, for_id, viewed) values (104, %d, %d, %d, 0)'
+    wall_user_id = row['wall_user_id']
+    query = 'insert into `notification` (type_id, msg_id, created_by, for_id, viewed) values (104, %d, %d, %d, 0)' % (ques_id, wall_user_id, user_id)
     mysql = Mysql()
     try:
-        mysql.execute(query, (msg_id, wall_id, user_id))
+        mysql.execute(query)
     except Exception as e:
         print e
     mysql.close()
@@ -626,39 +624,62 @@ def srch_person(term):
         return 0
 
 
-def search(search_term, query_filter):
+def search(search_term, type_id, seq_num):
+    if type_id == 0:
+        query = 'select row_id, type_id, id from search_terms where MATCH(terms) AGAINST ("%s") limit 10 OFFSET %d' % (search_term, (seq_num-1)*10)
+    else:
+        query = 'select row_id, type_id, id from search_terms where MATCH(terms) AGAINST ("%s") AND type_id = %d limit 10 OFFSET %d' % (search_term, type_id, (seq_num-1)*10)
+    mysql = Mysql()
+    rows = ()
+    try:
+        rows = mysql.getManyRows(query)
+    except Exception as e:
+        print e
+    mysql.close()
 
-    terms = search_term.split(' ')
-    search_len = 15
-    limit = min(search_len, len(terms))
-    global count
-    global final_result
-    final_result = 0
+    rows = list(rows)
+    rows_rel_list = [i['row_id'] for i in rows]
+    mysql = Mysql()
+    if type_id == 4 and len(rows):
+        query = 'select user_id,username,profile_pic from login where user_id IN (%s)' % ', '.join(map(str, map(lambda x: x['id'] if 'id' in x else '', rows)))
+        mysql = Mysql()
+        combined_rows = ()
+        try:
+            combined_rows = mysql.getManyRows(query)
+        except Exception as e:
+            print e
+        mysql.close()
 
-    if query_filter == 'all':
-        for term in terms[:(limit - 1)]:
-            songs = srch_song(term)
-            count += songs
-            if count < 15:
-                album = srch_album(term)
-                count += album
-                if count < 15:
-                    artist = srch_artist(term)
-                    count += artist
-    elif query_filter == 'song':
-        for term in terms[:(limit - 1)]:
-            songs = srch_song(term)
-            count += songs
-    elif query_filter == 'album':
-        for term in terms[:(limit - 1)]:
-            album = srch_album(term)
-            count += album
-    elif query_filter == 'artist':
-        for term in terms[:(limit - 1)]:
-            artist = srch_artist(term)
-            count += artist
+    elif type_id == 0:
+        temp1 = [i for i in rows if i['type_id'] == 1]
+        temp2 = [i for i in rows if i['type_id'] == 4]
+        if len(temp1):
+            query1 = 'select * from songs_info where row_id IN (%s)' % ', '.join(temp1)
+            mysql = Mysql()
+            songs_rows = ()
+            try:
+                songs_rows = mysql.getManyRows(query1)
+            except Exception as e:
+                print e
+            mysql.close()
 
-    return final_result
+        if len(temp2):
+            query2 = 'select user_id, username, profile_pic from login where user_id IN (%s)' % ', '.join(temp2)
+            mysql = Mysql()
+            people_rows = ()
+            try:
+                people_rows = mysql.getManyRows(query2)
+            except Exception as e:
+                print e
+            mysql.close()
+
+        combined_rows = songs_rows + people_rows
+        combined_rows = [ j for i in rows_rel_list for j in combined_rows if j['row_id'] == i ]
+
+    to_return = {}
+    for j in combined_rows:
+        to_return[j['row_id']] = j
+    return {'data':to_return, 'error':0}
 
 
 def get_notif(user_id, seq_no):

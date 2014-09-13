@@ -26,9 +26,9 @@ class Signup(restful.Resource):
         parser.add_argument('name', type=str, required=True)
         request_params = parser.parse_args()
         response = User.signup(
-            request_params['email'],
-            request_params['password'],
-            request_params['name']
+            email=request_params['email'],
+            password=request_params['password'],
+            name=request_params['name']
         )
         return response
 
@@ -190,6 +190,12 @@ class Collaboration(restful.Resource):
         return data
 
 
+class CollaborationRetrieve(restful.Resource):
+
+    def get(self):
+        parser = reqparse.RequestParser()
+
+
 class CollaborationRequest(restful.Resource):
 
     def post(self):
@@ -237,7 +243,7 @@ class PostQuestion(restful.Resource):
         parser.add_argument('question', type=str, required=True)
         request_params = parser.parse_args()
 
-        data = util.post_question(request_params['user_id'], request_params['wall_user_id'], request_params['question'])
+        data = util.post_question(user_id=request_params['user_id'], wall_user_id=request_params['wall_user_id'], question=request_params['question'])
 
         return data
 
@@ -282,12 +288,12 @@ class PostAnswer(restful.Resource):
 
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('ques_id', type=int, required=True)
+        parser.add_argument('user_id', type=int, required=True)
         parser.add_argument('answer', type=str, required=True)
         parser.add_argument('ques_id', type=int, required=True)
         request_params = parser.parse_args()
-
-        data = util.post_answer(**request_params)
+        print request_params
+        data = util.post_answer(user_id=request_params['user_id'], answer=request_params['answer'], ques_id=request_params['ques_id'])
 
         return data
 
@@ -297,7 +303,7 @@ class PostComment(restful.Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('ques_id', type=int, required=True)
-        parser.add_argument('user_id', type=str, required=True)
+        parser.add_argument('user_id', type=int, required=True)
         parser.add_argument('comment', type=str, required=True)
         request_params = parser.parse_args()
 
@@ -392,6 +398,7 @@ api.add_resource(UsersFollowing, '/users_following')
 api.add_resource(GetSines, '/get_sines')
 api.add_resource(AddPlayTimes, '/add_play_times')
 api.add_resource(Collaboration, '/collab')
+api.add_resource(CollaborationRetrieve, '/collab_ret')
 api.add_resource(CollaborationRequest, '/collab_req')
 api.add_resource(CollaborationAccept, '/collab_accept')
 api.add_resource(GetQuestion, '/get_question')

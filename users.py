@@ -1,6 +1,6 @@
 from mysql_wrapper import Mysql
 import requests
-import json
+import ujson as json
 import datetime
 import validate_email
 import hashlib
@@ -13,6 +13,7 @@ class User(object):
         if not flag:
             return error
         else:
+            rows = ()
             mysql = Mysql()
             query = 'select email from login'
             try:
@@ -22,6 +23,7 @@ class User(object):
                 return False
             mysql.close()
             email_list = list()
+            rows = list(rows)
             if rows:
                 for row in rows:
                     email_list.append(row['email'])
@@ -31,7 +33,7 @@ class User(object):
 
             password = hashlib.md5(password).hexdigest()
             mysql = Mysql()
-            query = 'insert into login (`email`, password, acc_type, `name`) values ("%s", "%s", %d, %s)' % (email, password, 0, name)
+            query = 'insert into login (`email`, password, acc_type, `name`) values ("%s", "%s", %d, "%s")' % (email, password, 0, name)
             try:
                 mysql.execute(query)
             except Exception as e:
@@ -39,7 +41,18 @@ class User(object):
                 return False
             user_id = mysql.last_insert_id
             mysql.close()
-            return {'id': user_id, 'email': email, 'error': 0}
+
+            query2 = 'insert into search_terms(`terms`, type_id, id) values ("%s", %d, %d)' % (name, 4, user_id)
+            try:
+                mysql.execute(query2)
+            except Exception as e:
+                print e
+                return False
+
+            mysql.close()
+
+
+            return {'data': {'id': user_id, 'email': email}, 'error': 0}
 
     @classmethod
     def authenticate(cls, id, password):
