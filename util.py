@@ -703,3 +703,77 @@ def get_notif(user_id, seq_no):
 
     return rows
 
+
+def add_follow(band_id, user_id):
+
+    query = 'insert into `following` (band_id, user_id) values (%d, %d)' % (band_id, user_id)
+    mysql = Mysql()
+    try:
+        mysql.execute(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    return {'error': 0}
+
+
+def total_follow(band_id):
+
+    query = 'select count(band_id) from following where band_id = %d' % band_id
+    row = None
+    mysql = Mysql()
+    try:
+        row = mysql.getSingleRow(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    return row
+
+
+def back(user_id, camp_id, amount):
+
+    query = 'insert into `backers` (user_id, camp_id, amount) values (%d, %d, %d) on duplicate key update amount = %d' % (user_id, camp_id, amount, amount)
+    mysql = Mysql()
+    try:
+        mysql.execute(query)
+    except Exception as e:
+        print e
+    mysql.close()
+
+    return {'error': 0}
+
+
+def check_if_backer(user_id):
+
+    query = 'select count(user_id) from backers where user_id = %d' % user_id
+    row = Null
+    mysql = Mysql()
+    try:
+        row = mysql.getSingleRow(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    if row == 0:
+        return {'userisbacker': 0}
+    else:
+        return {'userisbacker': 1}
+
+
+def create_campaign(user_id, goal, picture, goal_time):
+    #figure out datetime comparison for max goal_time
+
+    query = 'insert into `main_crowd` (user_id, goal, picture, goal_time) values (%d, %d, "%s", "%s")' % (user_id, goal, picture, goal_time)
+    mysql = Mysql()
+    try:
+        mysql.execute(query)
+    except Exception as e:
+        print e
+    mysql.close()
+
+    return {'error': 0}
+
+
+def get_user_running_campaigns(user_id, seq_no):
+
+    query = 'select '
+
+

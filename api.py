@@ -386,6 +386,83 @@ class GetNotification(restful.Resource):
         return data
 
 
+class AddFollow(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('band_id', type=int, required=True)
+        parser.add_argument('user_id', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.add_follow(band_id=request_params['band_id'], user_id=request_params['user_id'])
+
+        return data
+
+
+class TotalFollow(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('band_id', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.total_follow(band_id=request_params['band_id'])
+
+        return data
+
+
+class Back(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        parser.add_argument('camp_id', type=int, required=True)
+        parser.add_argument('amount', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.back(user_id=request_params['user_id'], camp_id=request_params['camp_id'], amount=request_params['amount'])
+
+        return data
+
+class CheckIfBacker(restful.Resource):
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.check_if_backer(user_id=request_params['user_id'])
+
+        return data
+
+
+class CreateCampaign(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        parser.add_argument('goal', type=int, required=True)
+        parser.add_argument('picture', type=str, required=True)
+        parser.add_argument('goal_time', type=str, required=True)
+        request_params = parser.parse_args()
+
+        data = util.create_campaign(user_id=request_params['user_id'], goal=request_params['goal'], picture=request_params['picture'], goal_time=request_params['goal_time'])
+
+        return data
+
+
+class GetUserRunningCampaign(restful.Resource):
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=int, required=True)
+        parser.add_argument('seq_no', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.get_user_running_campaign(user_id=request_params['user_id'], seq_no=request_params['seq_no'])
+
+        return data
+
 api.add_resource(GetNewTrack, '/get_next_track')
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
@@ -414,6 +491,13 @@ api.add_resource(DeleteComment, '/delete_comment')
 api.add_resource(DeleteInboxMessage, '/delete_inbox_message')
 api.add_resource(Search, '/search')
 api.add_resource(GetNotification, '/get_notif')
+api.add_resource(AddFollow, '/add_follow')
+api.add_resource(TotalFollow, '/total_follow')
+api.add_resource(Back, '/back')
+api.add_resource(CheckIfBacker, '/check_if_backer')
+api.add_resource(CreateCampaign, '/create_campaign')
+api.add_resource(GetUserRunningCampaign, '/get_user_running_campaign')
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8000, debug=True, use_reloader=True)
