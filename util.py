@@ -745,7 +745,7 @@ def back(user_id, camp_id, amount):
 def check_if_backer(user_id):
 
     query = 'select count(user_id) from backers where user_id = %d' % user_id
-    row = Null
+    row = None
     mysql = Mysql()
     try:
         row = mysql.getSingleRow(query)
@@ -772,8 +772,10 @@ def create_campaign(user_id, goal, picture, goal_time):
     return {'error': 0}
 
 
-def get_user_running_campaigns(user_id, seq_no):
+#def get_user_running_campaigns(user_id, seq_no):
 
-    query = 'select '
+    #query = 'select '
+
+
 
 
