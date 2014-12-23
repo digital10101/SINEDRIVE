@@ -463,6 +463,33 @@ class GetUserRunningCampaign(restful.Resource):
 
         return data
 
+
+class GetTags(restful.Resource):
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('song_id', type=int, required=True)
+        parser.add_argument('mode', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.get_tags(song_id=request_params['song_id'], mode=request_params['mode'])
+
+        return data
+
+
+class SubmitTags(restful.Resource):
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('song_id', type=int, required=True)
+        parser.add_argument('user_id', type=int, required=True)
+        request_params = parser.parse_args()
+
+        data = util.submit_tags(song_id=request_params['song_id'], user_id=request_params['user_id'])
+
+        return data
+
+
 api.add_resource(GetNewTrack, '/get_next_track')
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
@@ -497,6 +524,8 @@ api.add_resource(Back, '/back')
 api.add_resource(CheckIfBacker, '/check_if_backer')
 api.add_resource(CreateCampaign, '/create_campaign')
 api.add_resource(GetUserRunningCampaign, '/get_user_running_campaign')
+api.add_resource(GetTags, '/get_tags')
+api.add_resource(SubmitTags, '/submit_tags')
 
 
 if __name__ == '__main__':

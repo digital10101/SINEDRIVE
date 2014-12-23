@@ -679,7 +679,7 @@ def search(search_term, type_id, seq_num):
     to_return = {}
     for j in combined_rows:
         to_return[j['row_id']] = j
-    return {'data':to_return, 'error':0}
+    return {'data': to_return, 'error': 0}
 
 
 def get_notif(user_id, seq_no):
@@ -770,6 +770,23 @@ def create_campaign(user_id, goal, picture, goal_time):
     mysql.close()
 
     return {'error': 0}
+
+
+def get_tags(song_id, mode):
+
+    query = 'select tag from tag_song where song_id = %d order by rand() limit %d' % (song_id, mode)
+    mysql = Mysql()
+    rows = None
+    try:
+        rows = mysql.getManyRows(query)
+    except Exception as e:
+        print e
+    mysql.close()
+    return rows
+
+def submit_tags(song_id, user_id, tag):
+
+    query = 'insert into `tags_user` (song_id, user_id, vote) values (%d, %d, vote + 1)'
 
 
 #def get_user_running_campaigns(user_id, seq_no):
